@@ -5,7 +5,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Loader2, Download } from "lucide-react"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import ytdl from 'ytdl-core';
 
 const Index = () => {
   const [channelUrl, setChannelUrl] = useState('');
@@ -20,45 +19,28 @@ const Index = () => {
     setShorts([]);
 
     try {
-      if (!ytdl.validateURL(channelUrl)) {
-        throw new Error('Invalid YouTube URL');
-      }
+      // Simulating API call with a timeout
+      await new Promise(resolve => setTimeout(resolve, 1500));
 
-      const info = await ytdl.getInfo(channelUrl);
-      const shortsVideos = info.related_videos.filter(video => video.isShort);
+      // Mock data for demonstration
+      const mockShorts = [
+        { id: '1', title: 'Funny Cat Video', views: 1000000, likes: 50000, duration: '0:30', downloadUrl: 'https://example.com/video1' },
+        { id: '2', title: 'Amazing Dance Moves', views: 500000, likes: 25000, duration: '0:45', downloadUrl: 'https://example.com/video2' },
+        { id: '3', title: 'Quick Cooking Tip', views: 750000, likes: 35000, duration: '0:20', downloadUrl: 'https://example.com/video3' },
+      ];
 
-      const formattedShorts = shortsVideos.map(video => ({
-        id: video.id,
-        title: video.title,
-        views: video.view_count,
-        likes: video.likes,
-        duration: `${Math.floor(video.length_seconds / 60)}:${(video.length_seconds % 60).toString().padStart(2, '0')}`,
-        downloadUrl: video.video_url
-      }));
-
-      setShorts(formattedShorts);
+      setShorts(mockShorts);
     } catch (err) {
-      setError(err.message || 'Failed to scrape YouTube Shorts. Please try again.');
+      setError('Failed to fetch YouTube Shorts. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleDownload = async (downloadUrl) => {
-    try {
-      const info = await ytdl.getInfo(downloadUrl);
-      const format = ytdl.chooseFormat(info.formats, { quality: 'highestvideo' });
-      const url = format.url;
-      
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `${info.videoDetails.title}.mp4`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    } catch (err) {
-      setError('Failed to download the video. Please try again.');
-    }
+  const handleDownload = (downloadUrl) => {
+    // In a real application, this would initiate the download
+    console.log('Downloading:', downloadUrl);
+    alert('Download started! (This is a mock action)');
   };
 
   return (
