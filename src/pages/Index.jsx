@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Loader2, Download } from "lucide-react"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import ytdl from 'ytdl-core';
 
 const Index = () => {
   const [channelUrl, setChannelUrl] = useState('');
@@ -19,25 +20,45 @@ const Index = () => {
     setShorts([]);
 
     try {
-      // TODO: Implement actual API call to scrape YouTube Shorts from the channel
-      // This is a mock response for demonstration purposes
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      setShorts([
-        { id: '1', title: "Mock YouTube Short 1", views: 1000000, likes: 50000, duration: "30 seconds", downloadUrl: "https://example.com/mock-video1.mp4" },
-        { id: '2', title: "Mock YouTube Short 2", views: 500000, likes: 25000, duration: "45 seconds", downloadUrl: "https://example.com/mock-video2.mp4" },
-        { id: '3', title: "Mock YouTube Short 3", views: 750000, likes: 35000, duration: "20 seconds", downloadUrl: "https://example.com/mock-video3.mp4" },
-      ]);
+      if (!ytdl.validateURL(channelUrl)) {
+        throw new Error('Invalid YouTube URL');
+      }
+
+      const info = await ytdl.getInfo(channelUrl);
+      const shortsVideos = info.related_videos.filter(video => video.isShort);
+
+      const formattedShorts = shortsVideos.map(video => ({
+        id: video.id,
+        title: video.title,
+        views: video.view_count,
+        likes: video.likes,
+        duration: `${Math.floor(video.length_seconds / 60)}:${(video.length_seconds % 60).toString().padStart(2, '0')}`,
+        downloadUrl: video.video_url
+      }));
+
+      setShorts(formattedShorts);
     } catch (err) {
-      setError('Failed to scrape YouTube Shorts. Please try again.');
+      setError(err.message || 'Failed to scrape YouTube Shorts. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleDownload = (downloadUrl) => {
-    // In a real implementation, this would trigger the actual download
-    // For now, we'll just show an alert
-    alert(`Download started! (This is a mock download for ${downloadUrl})`);
+  const handleDownload = async (downloadUrl) => {
+    try {
+      const info = await ytdl.getInfo(downloadUrl);
+      const format = ytdl.chooseFormat(info.formats, { quality: 'highestvideo' });
+      const url = format.url;
+      
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${info.videoDetails.title}.mp4`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (err) {
+      setError('Failed to download the video. Please try again.');
+    }
   };
 
   return (
