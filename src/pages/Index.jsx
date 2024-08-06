@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { Loader2 } from "lucide-react"
+import { Loader2, Download } from "lucide-react"
 
 const Index = () => {
   const [url, setUrl] = useState('');
@@ -25,12 +25,21 @@ const Index = () => {
         title: "Mock YouTube Short Title",
         views: 1000000,
         likes: 50000,
-        duration: "30 seconds"
+        duration: "30 seconds",
+        downloadUrl: "https://example.com/mock-video.mp4" // Mock download URL
       });
     } catch (err) {
       setError('Failed to scrape YouTube Short. Please try again.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDownload = () => {
+    if (result && result.downloadUrl) {
+      // In a real implementation, this would trigger the actual download
+      // For now, we'll just show an alert
+      alert("Download started! (This is a mock download)");
     }
   };
 
@@ -72,6 +81,9 @@ const Index = () => {
                 <p><strong>Views:</strong> {result.views.toLocaleString()}</p>
                 <p><strong>Likes:</strong> {result.likes.toLocaleString()}</p>
                 <p><strong>Duration:</strong> {result.duration}</p>
+                <Button onClick={handleDownload} className="mt-4 w-full">
+                  <Download className="mr-2 h-4 w-4" /> Download Video
+                </Button>
               </CardContent>
             </Card>
           )}
